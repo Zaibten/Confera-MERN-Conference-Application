@@ -12,14 +12,14 @@ export const Navbar = () => {
       <Link href="/" className="flex items-center gap-1">
         <Image
           src="/icons/logo.svg"
-          alt="Yoom logo"
+          alt="Confera logo"
           width={32}
           height={32}
           className="max-sm:size-10"
         />
 
         <p className="text-[26px] font-extrabold text-white max-sm:hidden">
-          Yoom
+          Confera
         </p>
       </Link>
 
@@ -28,14 +28,14 @@ export const Navbar = () => {
           <UserButton afterSignOutUrl="/sign-in" />
         </SignedIn>
 
-        <Link
+        {/* <Link
           href={links.sourceCode}
           target="_blank"
           rel="noreferrer noopener"
           title="Source Code"
         >
           <Image src="/icons/github.svg" alt="GitHub" height={80} width={80} />
-        </Link>
+        </Link> */}
 
         <MobileNav />
       </div>

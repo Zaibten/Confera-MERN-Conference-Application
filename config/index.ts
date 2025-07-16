@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const siteConfig: Metadata = {
-  title: "Yoom",
+  title: "Confera",
   description: "Modern Next.js powered Video calling app",
   keywords: [
     "reactjs",
@@ -45,5 +45,5 @@ export const siteConfig: Metadata = {
 } as const;
 
 export const links = {
-  sourceCode: "https://github.com/sanidhyy/zoom-clone",
+  sourceCode: "#",
 } as const;
