@@ -1,4 +1,4 @@
-<h3 align="center">Confera: A Zoom Clone</h3>
+<h3 align="center">SyncMeet: A Zoom Clone</h3>
 
 ## <a name="tech-stack">⚙️ Tech Stack</a>
 
