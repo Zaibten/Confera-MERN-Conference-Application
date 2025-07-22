@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import HomeCard from './HomeCard';
@@ -15,8 +15,9 @@ import { useToast } from './ui/use-toast';
 import { Input } from './ui/input';
 
 const initialValues = {
-  dateTime: new Date(),
+  title: '',
   description: '',
+  dateTime: new Date(),
   link: '',
 };
 
@@ -31,34 +32,55 @@ const MeetingTypeList = () => {
   const { user } = useUser();
   const { toast } = useToast();
 
+  const [createdAt, setCreatedAt] = useState<string>('');
+
+  useEffect(() => {
+    if (meetingState === 'isScheduleMeeting') {
+      const now = new Date().toISOString();
+      setCreatedAt(now);
+    }
+  }, [meetingState]);
+
   const createMeeting = async () => {
     if (!client || !user) return;
+
+    if (!values.title.trim()) {
+      toast({ title: 'Please enter a meeting title' });
+      return;
+    }
+
+    if (!values.dateTime) {
+      toast({ title: 'Please select a date and time' });
+      return;
+    }
+
     try {
-      if (!values.dateTime) {
-        toast({ title: 'Please select a date and time' });
-        return;
-      }
       const id = crypto.randomUUID();
       const call = client.call('default', id);
       if (!call) throw new Error('Failed to create meeting');
-      const startsAt =
-        values.dateTime.toISOString() || new Date(Date.now()).toISOString();
+
+      const startsAt = values.dateTime.toISOString();
       const description = values.description || 'Instant Meeting';
+
       await call.getOrCreate({
         data: {
           starts_at: startsAt,
           custom: {
+            title: values.title,
             description,
+            createdAt,
+            duration: 60,
           },
         },
       });
+
       setCallDetail(call);
+
       if (!values.description) {
         router.push(`/meeting/${call.id}`);
       }
-      toast({
-        title: 'Meeting Created',
-      });
+
+      toast({ title: 'Meeting Created' });
     } catch (error) {
       console.error(error);
       toast({ title: 'Failed to create Meeting' });
@@ -71,56 +93,81 @@ const MeetingTypeList = () => {
 
   return (
     <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-      <HomeCard
-        img="/icons/add-meeting.svg"
-        title="New Meeting"
-        description="Start an instant meeting"
-        handleClick={() => setMeetingState('isInstantMeeting')}
-      />
-      <HomeCard
-        img="/icons/join-meeting.svg"
-        title="Join Meeting"
-        description="via invitation link"
-        className="bg-blue-1"
-        handleClick={() => setMeetingState('isJoiningMeeting')}
-      />
-      <HomeCard
-        img="/icons/schedule.svg"
-        title="Schedule Meeting"
-        description="Plan your meeting"
-        className="bg-purple-1"
-        handleClick={() => setMeetingState('isScheduleMeeting')}
-      />
-      <HomeCard
-        img="/icons/recordings.svg"
-        title="View Recordings"
-        description="Meeting Recordings"
-        className="bg-yellow-1"
-        handleClick={() => router.push('/recordings')}
-      />
+      {[
+        {
+          img: '/icons/add-meeting.svg',
+          title: 'New Meeting',
+          description: 'Start an instant meeting',
+          className: '',
+          onClick: () => setMeetingState('isInstantMeeting'),
+        },
+        {
+          img: '/icons/join-meeting.svg',
+          title: 'Join Meeting',
+          description: 'via invitation link',
+          className: 'bg-blue-1',
+          onClick: () => setMeetingState('isJoiningMeeting'),
+        },
+        {
+          img: '/icons/schedule.svg',
+          title: 'Schedule Meeting',
+          description: 'Plan your meeting',
+          className: 'bg-purple-1',
+          onClick: () => setMeetingState('isScheduleMeeting'),
+        },
+        {
+          img: '/icons/recordings.svg',
+          title: 'View Recordings',
+          description: 'Meeting Recordings',
+          className: 'bg-yellow-1',
+          onClick: () => router.push('/recordings'),
+        },
+      ].map((card, idx) => (
+        <div key={idx} className="h-full">
+          <HomeCard
+            img={card.img}
+            title={card.title}
+            description={card.description}
+            className={`h-full ${card.className}`}
+            handleClick={card.onClick}
+          />
+        </div>
+      ))}
 
+      {/* Schedule Modal */}
       {!callDetail ? (
         <MeetingModal
           isOpen={meetingState === 'isScheduleMeeting'}
           onClose={() => setMeetingState(undefined)}
-          title="Create Meeting"
+          title="Schedule Meeting"
           handleClick={createMeeting}
         >
           <div className="flex flex-col gap-2.5">
-            <label className="text-base font-normal leading-[22.4px] text-sky-2">
-              Add a description
-            </label>
+            <label className="text-base font-medium text-sky-2">Title</label>
+            <Input
+              placeholder="Meeting title"
+              value={values.title}
+              onChange={(e) =>
+                setValues({ ...values, title: e.target.value })
+              }
+              className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <label className="text-base font-normal text-sky-2">Description (optional)</label>
             <Textarea
+              placeholder="Add a description"
               className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
               onChange={(e) =>
                 setValues({ ...values, description: e.target.value })
               }
             />
           </div>
-          <div className="flex w-full flex-col gap-2.5">
-            <label className="text-base font-normal leading-[22.4px] text-sky-2">
-              Select Date and Time
-            </label>
+
+          <div className="flex flex-col gap-2.5">
+            <label className="text-base font-normal text-sky-2">Select Date and Time</label>
             <ReactDatePicker
               selected={values.dateTime}
               onChange={(date) => setValues({ ...values, dateTime: date! })}
@@ -130,6 +177,24 @@ const MeetingTypeList = () => {
               timeCaption="time"
               dateFormat="MMMM d, yyyy h:mm aa"
               className="w-full rounded bg-dark-3 p-2 focus:outline-none"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <label className="text-base font-normal text-sky-2">Created At</label>
+            <Input
+              value={createdAt}
+              disabled
+              className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <label className="text-base font-normal text-sky-2">Duration (minutes)</label>
+            <Input
+              value="60"
+              disabled
+              className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
         </MeetingModal>
@@ -142,13 +207,14 @@ const MeetingTypeList = () => {
             navigator.clipboard.writeText(meetingLink);
             toast({ title: 'Link Copied' });
           }}
-          image={'/icons/checked.svg'}
+          image="/icons/checked.svg"
           buttonIcon="/icons/copy.svg"
           className="text-center"
           buttonText="Copy Meeting Link"
         />
       )}
 
+      {/* Join Meeting Modal */}
       <MeetingModal
         isOpen={meetingState === 'isJoiningMeeting'}
         onClose={() => setMeetingState(undefined)}
@@ -164,6 +230,7 @@ const MeetingTypeList = () => {
         />
       </MeetingModal>
 
+      {/* Instant Meeting Modal */}
       <MeetingModal
         isOpen={meetingState === 'isInstantMeeting'}
         onClose={() => setMeetingState(undefined)}
