@@ -29,7 +29,7 @@ const UpcomingPage = () => {
     }
 
     try {
-      await fetch('http://localhost:5000/send-scheduleemail', {
+      await fetch('https://syncmeetserver.vercel.app/send-scheduleemail', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

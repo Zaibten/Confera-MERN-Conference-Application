@@ -28,7 +28,7 @@ const PersonalRoom = () => {
       emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g) || [];
 
     try {
-      await fetch("http://localhost:5000/send-email", {
+      await fetch("https://syncmeetserver.vercel.app/send-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
