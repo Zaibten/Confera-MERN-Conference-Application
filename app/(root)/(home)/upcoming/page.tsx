@@ -1,8 +1,9 @@
 'use client';
 
+import React from 'react'; // ✅ Required for JSX
 import { useState } from 'react';
 import CallList from '@/components/CallList';
-import { Button } from '@/components/ui/button'; // assuming you use shadcn/ui or similar
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
 const UpcomingPage = () => {
@@ -16,49 +17,46 @@ const UpcomingPage = () => {
     setEmails(value);
   };
 
-const handleSend = async () => {
-  const cleanEmails =
-    emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g) || [];
+  const handleSend = async () => {
+    const cleanEmails =
+      emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g) || [];
 
-  if (!meetingLink || cleanEmails.length === 0) {
-    toast({
-      title: 'Missing Information',
-      description: 'Please enter a valid meeting link and at least one email.',
-    });
-    return;
-  }
+    if (!meetingLink || cleanEmails.length === 0) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please enter a valid meeting link and at least one email.',
+      });
+      return;
+    }
 
-  try {
-    await fetch('http://localhost:5000/send-scheduleemail', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: 'Meeting Invitation',
-        description: `You have been invited to join a meeting. Please join from the link below.`,
-        time: 'TBD',
-        emails: cleanEmails,
-        meetingLink,
-      }),
-    });
+    try {
+      await fetch('http://localhost:5000/send-scheduleemail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Meeting Invitation',
+          description: `You have been invited to join a meeting. Please join from the link below.`,
+          time: 'TBD',
+          emails: cleanEmails,
+          meetingLink,
+        }),
+      });
 
-    toast({
-      title: 'Invitations Sent',
-      description: 'Emails were successfully sent!',
-    });
+      toast({
+        title: 'Invitations Sent',
+        description: 'Emails were successfully sent!',
+      });
 
-    setEmails('');
-    setMeetingLink('');
-  } catch (err) {
-    console.error(err);
-    toast({
-      title: 'Error',
-      description: 'Failed to send emails.',
-    });
-  }
-};
-
+      setEmails('');
+      setMeetingLink('');
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Error',
+        description: 'Failed to send emails.',
+      });
+    }
+  };
 
   return (
     <section className="flex size-full flex-col gap-10 text-white">
@@ -74,7 +72,7 @@ const handleSend = async () => {
           onChange={handleEmailInput}
         />
         <p className="mt-1 text-xs text-gray-400">
-          Separate emails using comma or ".com" and space – auto-formats to ".com,"
+          Separate emails using comma or &quot;.com&quot; and space – auto-formats to &quot;.com,&quot;
         </p>
       </div>
 

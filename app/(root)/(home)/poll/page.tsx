@@ -1,5 +1,5 @@
 "use client";
-
+import React from 'react';
 import { useUser } from "@clerk/nextjs";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useRouter } from "next/navigation";
@@ -8,24 +8,7 @@ import { useGetCallById } from "@/hooks/useGetCallById";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
-const Table = ({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) => {
-  return (
-    <div className="flex flex-col items-start gap-2 xl:flex-row">
-      <h1 className="text-base font-medium text-sky-1 lg:text-xl xl:min-w-32">
-        {title}:
-      </h1>
-      <h1 className="truncate text-sm font-bold max-sm:max-w-[320px] lg:text-xl">
-        {description}
-      </h1>
-    </div>
-  );
-};
+
 
 const PersonalRoom = () => {
   const router = useRouter();
@@ -138,8 +121,9 @@ const sendInvitationsOnly = async () => {
             onChange={handleEmailInput}
           />
           <p className="mt-1 text-xs text-gray-400">
-            Separate emails using ".com" and a space – it will auto-format.
-          </p>
+  Separate emails using &quot;.com&quot; and a space – it will auto-format.
+</p>
+
         </div>
 
         <Button className="mt-4 w-fit" onClick={sendInvitationsOnly}>
