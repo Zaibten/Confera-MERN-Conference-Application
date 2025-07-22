@@ -1,19 +1,12 @@
 "use client";
-import React from 'react';
+
 import { useUser } from "@clerk/nextjs";
-import { useStreamVideoClient } from "@stream-io/video-react-sdk";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useGetCallById } from "@/hooks/useGetCallById";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
-
-
 const PersonalRoom = () => {
-  const router = useRouter();
   const { user } = useUser();
-  const client = useStreamVideoClient();
   const { toast } = useToast();
 
   const [title, setTitle] = useState("");
@@ -21,63 +14,51 @@ const PersonalRoom = () => {
   const [time, setTime] = useState("");
   const [emails, setEmails] = useState("");
 
-  const meetingId = user?.id;
-  const { call } = useGetCallById(meetingId!);
-
   const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
-    // Replace ".com " with ".com," if not already followed by a comma
     value = value.replace(/\.com\s+/g, ".com, ");
     setEmails(value);
   };
 
-const sendInvitationsOnly = async () => {
-  if (!user) return;
+  const sendInvitationsOnly = async () => {
+    if (!user) return;
 
-  const meetingId = user.id;
-  const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${meetingId}?personal=true`;
+    const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${user.id}?personal=true`;
+    const cleanEmails =
+      emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g) || [];
 
-  const cleanEmails =
-    emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g) || [];
+    try {
+      await fetch("http://localhost:5000/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          time,
+          emails: cleanEmails,
+          meetingLink,
+        }),
+      });
 
-  try {
-    await fetch("http://localhost:5000/send-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        description,
-        time,
-        emails: cleanEmails,
-        meetingLink,
-      }),
-    });
+      toast({
+        title: "Invitations Sent",
+        description: "Emails were successfully sent!",
+      });
 
-    toast({
-      title: "Invitations Sent",
-      description: "Emails were successfully sent!",
-    });
-
-    // Clear the input fields
-    setTitle("");
-    setDescription("");
-    setTime("");
-    setEmails("");
-
-  } catch (err) {
-    toast({ title: "Error", description: "Failed to send emails." });
-  }
-};
-
-
-
+      setTitle("");
+      setDescription("");
+      setTime("");
+      setEmails("");
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to send emails." });
+    }
+  };
 
   return (
     <section className="flex size-full flex-col gap-10 text-white">
       <h1 className="text-xl font-bold lg:text-3xl">Create Poll For Meeting</h1>
-
       <div className="flex flex-col gap-4">
         <div>
           <p className="mb-1 text-sm font-medium text-white">Meeting Title</p>
@@ -121,9 +102,8 @@ const sendInvitationsOnly = async () => {
             onChange={handleEmailInput}
           />
           <p className="mt-1 text-xs text-gray-400">
-  Separate emails using &quot;.com&quot; and a space – it will auto-format.
-</p>
-
+            Separate emails using &quot;.com&quot; and a space – it will auto-format.
+          </p>
         </div>
 
         <Button className="mt-4 w-fit" onClick={sendInvitationsOnly}>

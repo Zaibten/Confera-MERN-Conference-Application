@@ -1,10 +1,10 @@
 'use client';
 
-import React from 'react'; // ✅ Required for JSX
 import { useState } from 'react';
 import CallList from '@/components/CallList';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+
 
 const UpcomingPage = () => {
   const [emails, setEmails] = useState('');
