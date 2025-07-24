@@ -8,15 +8,37 @@ const { Clerk } = require("@clerk/clerk-sdk-node");
 const app = express();
 
 // ✅ CORS for local and production
+// app.use(cors({
+//   origin: [
+//     "http://localhost:3000",
+//     "https://syncmeet-six.vercel.app"
+//   ],
+//   methods: ["GET", "POST", "OPTIONS"],
+//   allowedHeaders: ["Content-Type"],
+//   credentials: true
+// }));
+
+
+// Enable CORS
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://syncmeet-six.vercel.app"
-  ],
+  origin: ["http://localhost:3000", "https://syncmeet-six.vercel.app"],
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
   credentials: true
 }));
+
+// Fallback CORS headers for non-compliant hosts
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");
+  if (req.method === "OPTIONS") return res.sendStatus(200);
+  next();
+});
+
+// Handle OPTIONS preflight
+app.options("*", cors());
 
 
 app.use(express.json());
