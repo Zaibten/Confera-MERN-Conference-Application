@@ -13,9 +13,11 @@ app.use(cors({
     "http://localhost:3000",
     "https://syncmeet-six.vercel.app"
   ],
-  methods: ["POST"],
-  allowedHeaders: ["Content-Type"]
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+  credentials: true
 }));
+
 
 app.use(express.json());
 
