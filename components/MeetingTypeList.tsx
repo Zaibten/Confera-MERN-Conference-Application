@@ -28,6 +28,7 @@ const MeetingTypeList = () => {
   >(undefined);
   const [values, setValues] = useState(initialValues);
   const [callDetail, setCallDetail] = useState<Call>();
+  const [hostName, setHostName] = useState('');
   const client = useStreamVideoClient();
   const { user } = useUser();
   const { toast } = useToast();
@@ -35,23 +36,36 @@ const MeetingTypeList = () => {
   const [createdAt, setCreatedAt] = useState<string>('');
 
   useEffect(() => {
+    // Set Created At
     if (meetingState === 'isScheduleMeeting') {
       const now = new Date().toISOString();
       setCreatedAt(now);
+    }
+
+    // Load Host Name from localStorage
+    const auth = localStorage.getItem('authState');
+    if (auth) {
+      try {
+        const parsed = JSON.parse(auth);
+        setHostName(parsed.name || '');
+      } catch (err) {
+        console.error('Failed to parse authState from localStorage');
+      }
     }
   }, [meetingState]);
 
   const createMeeting = async () => {
     if (!client || !user) return;
 
-    if (!values.title.trim()) {
-      toast({ title: 'Please enter a meeting title' });
-      return;
-    }
-
-    if (!values.dateTime) {
-      toast({ title: 'Please select a date and time' });
-      return;
+    if (meetingState === 'isScheduleMeeting') {
+      if (!values.title.trim()) {
+        toast({ title: 'Please enter a meeting title' });
+        return;
+      }
+      if (!values.dateTime) {
+        toast({ title: 'Please select a date and time' });
+        return;
+      }
     }
 
     try {
@@ -60,23 +74,26 @@ const MeetingTypeList = () => {
       if (!call) throw new Error('Failed to create meeting');
 
       const startsAt = values.dateTime.toISOString();
+      const title =
+        values.title.trim() || (meetingState === 'isInstantMeeting' ? 'Instant Meeting' : '');
       const description = values.description || 'Instant Meeting';
 
       await call.getOrCreate({
         data: {
           starts_at: startsAt,
           custom: {
-            title: values.title,
+            title,
             description,
             createdAt,
             duration: 60,
+            host: hostName,
           },
         },
       });
 
       setCallDetail(call);
 
-      if (!values.description) {
+      if (meetingState === 'isInstantMeeting') {
         router.push(`/meeting/${call.id}`);
       }
 
@@ -96,7 +113,7 @@ const MeetingTypeList = () => {
       {[
         {
           img: '/icons/add-meeting.svg',
-          title: 'New Meeting',
+          title: 'Instant Meeting',
           description: 'Start an instant meeting',
           className: '',
           onClick: () => setMeetingState('isInstantMeeting'),
@@ -151,7 +168,15 @@ const MeetingTypeList = () => {
                 setValues({ ...values, title: e.target.value })
               }
               className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <label className="text-base font-medium text-sky-2">Host Name</label>
+            <Input
+              value={hostName}
+              disabled
+              className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
 
