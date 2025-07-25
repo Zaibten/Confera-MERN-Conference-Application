@@ -36,23 +36,17 @@ const MeetingTypeList = () => {
   const [createdAt, setCreatedAt] = useState<string>('');
 
   useEffect(() => {
-    // Set Created At
+    // Set Created At for scheduled meeting
     if (meetingState === 'isScheduleMeeting') {
       const now = new Date().toISOString();
       setCreatedAt(now);
     }
 
-    // Load Host Name from localStorage
-    const auth = localStorage.getItem('authState');
-    if (auth) {
-      try {
-        const parsed = JSON.parse(auth);
-        setHostName(parsed.name || '');
-      } catch (err) {
-        console.error('Failed to parse authState from localStorage');
-      }
+    // Set Host Name from Clerk user
+    if (user) {
+      setHostName(user.fullName || '');
     }
-  }, [meetingState]);
+  }, [meetingState, user]);
 
   const createMeeting = async () => {
     if (!client || !user) return;
