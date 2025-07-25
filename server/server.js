@@ -19,34 +19,33 @@ const app = express();
 // }));
 
 
-// Use CORS middleware
+// ✅ Allow all OPTIONS requests to respond with proper headers
+app.options('*', (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.sendStatus(200);
+});
+
+// ✅ CORS middleware (keep only this one)
 app.use(cors({
   origin: ["http://localhost:3000", "https://syncmeet-six.vercel.app"],
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
-  credentials: true
+  credentials: true,
 }));
 
-// Manually handle preflight requests
-app.options("*", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  return res.sendStatus(200);
-});
+app.use(express.json());
 
-// Fallback CORS headers middleware
+// Optional: fallback headers (but not required if cors() is configured right)
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");
   next();
 });
-
-
-app.use(express.json());
 
 app.get("/", (req, res) => {
   res.status(200).send("🟢 Sync Meet API is running.");
