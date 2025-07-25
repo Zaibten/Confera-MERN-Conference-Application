@@ -121,11 +121,12 @@ useEffect(() => {
           />
 
           <input
-            type="time"
-            className="w-full rounded-md px-4 py-2 bg-dark-2 border border-gray-600"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
+  type="datetime-local"
+  className="w-full rounded-md px-4 py-2 bg-dark-2 border border-gray-600"
+  value={time}
+  onChange={(e) => setTime(e.target.value)}
+/>
+
 
           <input
             type="text"

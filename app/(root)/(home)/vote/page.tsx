@@ -31,11 +31,12 @@ export default function VotePage() {
       ) : (
         <>
           <input
-            type="time"
-            className="p-2 border border-gray-600 bg-dark-2 rounded mb-4"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
+  type="datetime-local"
+  className="p-2 border border-gray-600 bg-dark-2 rounded mb-4"
+  value={time}
+  onChange={(e) => setTime(e.target.value)}
+/>
+
           <button
             onClick={handleSubmit}
             className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
