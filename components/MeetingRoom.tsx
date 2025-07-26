@@ -40,7 +40,7 @@ const MeetingRoom = () => {
 
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
-  const call = useCall();
+  // const call = useCall();
 
   const [timer, setTimer] = useState(1);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
