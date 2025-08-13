@@ -103,7 +103,7 @@ const MeetingTypeList = () => {
       if (meetingState === 'isScheduleMeeting') {
         try {
           const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call.id}`;
-          const response = await fetch('http://localhost:5000/send-scheduleemail', {
+          const response = await fetch('https://syncmeetserver.vercel.app/send-scheduleemail', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
