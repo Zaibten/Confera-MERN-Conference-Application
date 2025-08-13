@@ -34,15 +34,28 @@ const MeetingTypeList = () => {
   const { toast } = useToast();
 
   const [createdAt, setCreatedAt] = useState<string>('');
+  const [emails, setEmails] = useState('');
+
+  const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    value = value.replace(/\.com\s+/g, '.com, ');
+    setEmails(value);
+  };
+
+  // Check on load if we should open Schedule Meeting modal after refresh
+  useEffect(() => {
+    const shouldOpen = localStorage.getItem('openScheduleAfterRefresh');
+    if (shouldOpen === 'true') {
+      setMeetingState('isScheduleMeeting');
+      localStorage.removeItem('openScheduleAfterRefresh');
+    }
+  }, []);
 
   useEffect(() => {
-    // Set Created At for scheduled meeting
     if (meetingState === 'isScheduleMeeting') {
       const now = new Date().toISOString();
       setCreatedAt(now);
     }
-
-    // Set Host Name from Clerk user
     if (user) {
       setHostName(user.fullName || '');
     }
@@ -87,6 +100,31 @@ const MeetingTypeList = () => {
 
       setCallDetail(call);
 
+      if (meetingState === 'isScheduleMeeting') {
+        try {
+          const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call.id}`;
+          const response = await fetch('http://localhost:5000/send-scheduleemail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title,
+              description,
+              time: startsAt,
+              emails,
+              meetingLink,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to send schedule email');
+          }
+          toast({ title: 'Schedule email sent' });
+        } catch (emailErr) {
+          console.error(emailErr);
+          toast({ title: 'Meeting created, but email failed to send' });
+        }
+      }
+
       if (meetingState === 'isInstantMeeting') {
         router.push(`/meeting/${call.id}`);
       }
@@ -124,7 +162,10 @@ const MeetingTypeList = () => {
           title: 'Schedule Meeting',
           description: 'Plan your meeting',
           className: 'bg-purple-1',
-          onClick: () => setMeetingState('isScheduleMeeting'),
+          onClick: () => {
+            localStorage.setItem('openScheduleAfterRefresh', 'true');
+            window.location.reload();
+          },
         },
         {
           img: '/icons/recordings.svg',
@@ -158,13 +199,10 @@ const MeetingTypeList = () => {
             <Input
               placeholder="Meeting title"
               value={values.title}
-              onChange={(e) =>
-                setValues({ ...values, title: e.target.value })
-              }
+              onChange={(e) => setValues({ ...values, title: e.target.value })}
               className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
-
           <div className="flex flex-col gap-2.5">
             <label className="text-base font-medium text-sky-2">Host Name</label>
             <Input
@@ -173,18 +211,27 @@ const MeetingTypeList = () => {
               className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
-
           <div className="flex flex-col gap-2.5">
             <label className="text-base font-normal text-sky-2">Description (optional)</label>
             <Textarea
               placeholder="Add a description"
               className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-              onChange={(e) =>
-                setValues({ ...values, description: e.target.value })
-              }
+              onChange={(e) => setValues({ ...values, description: e.target.value })}
             />
           </div>
-
+          <div>
+            <p className="mb-1 text-sm font-medium text-white">Invite Emails</p>
+            <input
+              type="text"
+              placeholder="example1@gmail.com, example2@gmail.com"
+              className="w-full rounded-md border border-gray-600 bg-dark-2 px-4 py-2 text-white placeholder:text-gray-400"
+              value={emails}
+              onChange={handleEmailInput}
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              Separate emails using comma or &quot;.com&quot; and space – auto-formats to &quot;.com,&quot;
+            </p>
+          </div>
           <div className="flex flex-col gap-2.5">
             <label className="text-base font-normal text-sky-2">Select Date and Time</label>
             <ReactDatePicker
@@ -198,7 +245,6 @@ const MeetingTypeList = () => {
               className="w-full rounded bg-dark-3 p-2 focus:outline-none"
             />
           </div>
-
           <div className="flex flex-col gap-2.5">
             <label className="text-base font-normal text-sky-2">Created At</label>
             <Input
@@ -207,7 +253,6 @@ const MeetingTypeList = () => {
               className="border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
-
           <div className="flex flex-col gap-2.5">
             <label className="text-base font-normal text-sky-2">Duration (minutes)</label>
             <Input

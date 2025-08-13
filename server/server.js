@@ -146,6 +146,80 @@ app.post("/send-email", async (req, res) => {
   }
 });
 
+app.post("/send-meeting-invite", async (req, res) => {
+  let { title, description, time, meetingLink, emails } = req.body;
+
+  if (!emails || emails.length === 0) {
+    return res.status(400).json({ error: "Email list is empty." });
+  }
+
+  try {
+    // Configure transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.SMTP_EMAIL,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    // Send to each recipient
+    for (const email of emails) {
+      const mailOptions = {
+        from: `"Sync Meet" <${process.env.SMTP_EMAIL}>`,
+        to: email.trim(),
+        subject: `📅 Meeting Invitation: ${title} - Sync Meet`,
+        html: `
+  <div style="max-width: 650px; margin: auto; font-family: 'Segoe UI', sans-serif; background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.07);">
+    <div style="text-align: center;">
+      <img src="https://img.freepik.com/premium-vector/round-zoom-logo-isolated-white-background_469489-904.jpg?semt=ais_hybrid&w=740" alt="Sync Meet Logo" style="width: 85px; height: 85px; border-radius: 50%; border: 3px solid #0f62fe;" />
+      <h1 style="color: #0f62fe; font-size: 24px; margin: 20px 0 10px;">Sync Meet</h1>
+    </div>
+
+    <h2 style="color: #333; font-size: 20px; text-align: center; margin-bottom: 10px;">📅 Meeting Scheduled: ${title}</h2>
+
+    <div style="margin-top: 30px; text-align: center;">
+      <p style="font-size: 15px; color: #444; line-height: 1.6;">
+        <strong>Description:</strong> ${description}<br/>
+        <strong>Time:</strong> ${time}<br/>
+      </p>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+      <a href="${meetingLink}" target="_blank"
+        style="background-color: #0f62fe; color: white; padding: 12px 20px; border-radius: 30px; font-weight: bold; text-decoration: none; display: inline-block; animation: pulse 2s infinite;">
+        🔗 Join Meeting
+      </a>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #eee; margin: 40px 0;" />
+
+    <footer style="text-align: center; font-size: 12px; color: #aaa;">
+      <p>You received this meeting invitation from <strong>Sync Meet</strong>.</p>
+      <p style="margin-top: 4px;">&copy; ${new Date().getFullYear()} Sync Meet. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <style>
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(15, 98, 254, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(15, 98, 254, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(15, 98, 254, 0); }
+    }
+  </style>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+    }
+
+    res.status(200).json({ message: "Meeting invites sent successfully." });
+  } catch (err) {
+    console.error("Email sending error:", err);
+    res.status(500).json({ error: "Failed to send meeting invites." });
+  }
+});
+
 
 const votes = {}; // In-memory storage; replace with DB in production
 
@@ -178,7 +252,6 @@ app.get("/votes", (req, res) => {
 });
 
 
-
 app.post("/send-scheduleemail", async (req, res) => {
   let { title, description, time, emails, meetingLink } = req.body;
 
@@ -188,6 +261,11 @@ app.post("/send-scheduleemail", async (req, res) => {
 
   if (typeof emails === "string") {
     emails = emails.replace(/\.com\s+/g, ".com,");
+  }
+
+  // ✅ Ensure meetingLink starts with http:// or https://
+  if (meetingLink && !/^https?:\/\//i.test(meetingLink)) {
+    meetingLink = `http://${meetingLink}`;
   }
 
   try {
@@ -212,13 +290,20 @@ app.post("/send-scheduleemail", async (req, res) => {
 
           <h2 style="color: #333; font-size: 20px; text-align: center; margin-bottom: 10px;">📅 Scheduled Meeting: ${title}</h2>
 
+          <p style="font-size: 16px; color: #333; margin: 10px 0; line-height: 1.6;">
+  <strong style="color: #0f62fe;">📄 Description:</strong> ${description}
+</p>
+
+<p style="font-size: 16px; color: #333; margin: 10px 0; line-height: 1.6;">
+  <strong style="color: #0f62fe;">⏰ Time:</strong> ${time}
+</p>
+
           <div style="margin-top: 30px; text-align: center;">
             <p style="font-size: 15px; color: #444; line-height: 1.6;">
               You are invited to attend the scheduled meeting.<br />
               Click the button below to join when the time comes.
             </p>
           </div>
-
           <div style="margin-top: 20px; text-align: center;">
             <a href="${meetingLink}" target="_blank" style="background-color: #0f62fe; color: white; padding: 12px 20px; border-radius: 30px; font-weight: bold; text-decoration: none; display: inline-block;">
               👉 Join Meeting
@@ -232,14 +317,6 @@ app.post("/send-scheduleemail", async (req, res) => {
             <p style="margin-top: 4px;">&copy; ${new Date().getFullYear()} Sync Meet. All rights reserved.</p>
           </footer>
         </div>
-
-        <style>
-          @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(15, 98, 254, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(15, 98, 254, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(15, 98, 254, 0); }
-          }
-        </style>
       `,
     };
 
@@ -250,6 +327,7 @@ app.post("/send-scheduleemail", async (req, res) => {
     res.status(500).json({ error: "Failed to send email." });
   }
 });
+
 
 
 
