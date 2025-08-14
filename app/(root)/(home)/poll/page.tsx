@@ -120,12 +120,14 @@ useEffect(() => {
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          <input
+         <input
   type="datetime-local"
-  className="w-full rounded-md px-4 py-2 bg-dark-2 border border-gray-600"
+  className="w-full rounded-md px-4 py-2 bg-dark-2 border border-gray-600 text-white"
   value={time}
+  min={new Date().toISOString().slice(0, 16)} // disables past dates
   onChange={(e) => setTime(e.target.value)}
 />
+
 
 
           <input

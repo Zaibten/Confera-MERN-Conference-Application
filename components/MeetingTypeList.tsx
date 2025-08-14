@@ -142,50 +142,58 @@ const MeetingTypeList = () => {
   const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${callDetail?.id}`;
 
   return (
-    <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-      {[
-        {
-          img: '/icons/add-meeting.svg',
-          title: 'Instant Meeting',
-          description: 'Start an instant meeting',
-          className: '',
-          onClick: () => setMeetingState('isInstantMeeting'),
-        },
-        {
-          img: '/icons/join-meeting.svg',
-          title: 'Join Meeting',
-          description: 'via invitation link',
-          className: 'bg-blue-1',
-          onClick: () => setMeetingState('isJoiningMeeting'),
-        },
-        {
-          img: '/icons/schedule.svg',
-          title: 'Schedule Meeting',
-          description: 'Plan your meeting',
-          className: 'bg-purple-1',
-          onClick: () => {
-            localStorage.setItem('openScheduleAfterRefresh', 'true');
-            window.location.reload();
-          },
-        },
-        {
-          img: '/icons/recordings.svg',
-          title: 'View Recordings',
-          description: 'Meeting Recordings',
-          className: 'bg-yellow-1',
-          onClick: () => router.push('/recordings'),
-        },
-      ].map((card, idx) => (
-        <div key={idx} className="h-full">
-          <HomeCard
-            img={card.img}
-            title={card.title}
-            description={card.description}
-            className={`h-full ${card.className}`}
-            handleClick={card.onClick}
-          />
-        </div>
-      ))}
+<section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+  {[
+    {
+      img: '/icons/add-meeting.svg',
+      title: 'Instant Meeting',
+      description: 'Start an instant meeting',
+      className: '',
+      onClick: () => setMeetingState('isInstantMeeting'),
+    },
+    {
+      img: '/icons/join-meeting.svg',
+      title: 'Join Meeting',
+      description: 'via invitation link',
+      className: 'bg-blue-1',
+      onClick: () => setMeetingState('isJoiningMeeting'),
+    },
+    {
+      img: '/icons/join-meeting.svg',
+      title: 'Meeting Poll',
+      description: 'create poll for meetings',
+      className: 'bg-red-500',
+      onClick: () => router.push('/poll'),
+    },
+    {
+      img: '/icons/schedule.svg',
+      title: 'Schedule Meeting',
+      description: 'Plan your meeting',
+      className: 'bg-purple-1',
+      onClick: () => {
+        localStorage.setItem('openScheduleAfterRefresh', 'true');
+        window.location.reload();
+      },
+    },
+    {
+      img: '/icons/recordings.svg',
+      title: 'View Recordings',
+      description: 'Meeting Recordings',
+      className: 'bg-yellow-1',
+      onClick: () => router.push('/recordings'),
+    },
+  ].map((card, idx) => (
+    <div key={idx} className="w-full h-64"> {/* increased height */}
+      <HomeCard
+        img={card.img}
+        title={card.title}
+        description={card.description}
+        className={`h-full ${card.className}`}
+        handleClick={card.onClick}
+      />
+    </div>
+  ))}
+
 
       {/* Schedule Modal */}
       {!callDetail ? (
