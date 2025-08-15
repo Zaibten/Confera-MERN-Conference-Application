@@ -161,8 +161,8 @@ const MeetingTypeList = () => {
     {
       img: '/icons/join-meeting.svg',
       title: 'Meeting Poll',
-      description: 'create poll for meetings',
-      className: 'bg-red-500',
+      description: 'Create poll for meetings',
+      className: 'bg-yellow-1',
       onClick: () => router.push('/poll'),
     },
     {
@@ -174,13 +174,6 @@ const MeetingTypeList = () => {
         localStorage.setItem('openScheduleAfterRefresh', 'true');
         window.location.reload();
       },
-    },
-    {
-      img: '/icons/recordings.svg',
-      title: 'View Recordings',
-      description: 'Meeting Recordings',
-      className: 'bg-yellow-1',
-      onClick: () => router.push('/recordings'),
     },
   ].map((card, idx) => (
     <div key={idx} className="w-full h-64"> {/* increased height */}
