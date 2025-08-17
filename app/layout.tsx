@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "SyncMeet",
   description: "Video calling App",
   icons: {
-    icon: "/icons/logo.svg",
+    icon: "/icons/logo.png",
   },
 };
 
@@ -27,7 +27,7 @@ export default function RootLayout({
         appearance={{
           layout: {
             socialButtonsVariant: "iconButton",
-            logoImageUrl: "/icons/logo.svg",
+            logoImageUrl: "/icons/logo.png",
           },
           variables: {
             colorText: "#fff",
