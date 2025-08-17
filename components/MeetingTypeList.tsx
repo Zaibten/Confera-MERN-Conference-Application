@@ -142,7 +142,7 @@ const MeetingTypeList = () => {
   const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${callDetail?.id}`;
 
   return (
-<section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+<section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(auto-fit,minmax(100px,1fr))] gap-4 w-full">
   {[
     {
       img: '/icons/add-meeting.svg',
@@ -161,7 +161,7 @@ const MeetingTypeList = () => {
     {
       img: '/icons/join-meeting.svg',
       title: 'Meeting Poll',
-      description: 'Create poll for meetings',
+      description: 'create poll for meetings',
       className: 'bg-yellow-1',
       onClick: () => router.push('/poll'),
     },
@@ -175,6 +175,13 @@ const MeetingTypeList = () => {
         window.location.reload();
       },
     },
+    // {
+    //   img: '/icons/recordings.svg',
+    //   title: 'View Recordings',
+    //   description: 'Meeting Recordings',
+    //   className: 'bg-red-500',
+    //   onClick: () => router.push('/recordings'),
+    // },
   ].map((card, idx) => (
     <div key={idx} className="w-full h-64"> {/* increased height */}
       <HomeCard
