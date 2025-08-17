@@ -38,51 +38,61 @@ const PersonalRoom = () => {
     );
   };
 
-  const sendInvitationsOnly = async () => {
-    if (!user) return;
+const sendInvitationsOnly = async () => {
+  if (!user) return;
 
-    const cleanEmails =
-      emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g) || [];
+  const now = new Date();
+  if (!time || new Date(time) < now) {
+    toast({
+      title: "Invalid Time",
+      description: "Meeting time cannot be in the past.",
+    });
+    return; // 🚫 stop sending
+  }
 
-    try {
-      const response = await fetch("https://syncmeetserver.vercel.app/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          time,
-          emails: cleanEmails,
-          priorityEmails,
-          userId: user.id,
-        }),
-      });
+  const cleanEmails =
+    emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g) || [];
 
-      if (!response.ok) throw new Error("Server failed");
-
-      toast({
-        title: "Invitations Sent",
-        description: "Poll sent and data saved successfully.",
-      });
-
-      setTitle("");
-      setDescription("");
-      setTime("");
-      setEmails("");
-      setPriorityEmails([]);
-
-      setSavedPoll({
+  try {
+    const response = await fetch("https://syncmeetserver.vercel.app/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         title,
         description,
         time,
         emails: cleanEmails,
         priorityEmails,
-        sentAt: new Date().toISOString(),
-      });
-    } catch (err) {
-      toast({ title: "Error", description: "Failed to send poll." });
-    }
-  };
+        userId: user.id,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Server failed");
+
+    toast({
+      title: "Invitations Sent",
+      description: "Poll sent and data saved successfully.",
+    });
+
+    // reset state
+    setTitle("");
+    setDescription("");
+    setTime("");
+    setEmails("");
+    setPriorityEmails([]);
+    setSavedPoll({
+      title,
+      description,
+      time,
+      emails: cleanEmails,
+      priorityEmails,
+      sentAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    toast({ title: "Error", description: "Failed to send poll." });
+  }
+};
+
 
   const emailList = emails.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g) || [];
 
@@ -120,13 +130,28 @@ useEffect(() => {
             onChange={(e) => setDescription(e.target.value)}
           />
 
-         <input
+<input
   type="datetime-local"
   className="w-full rounded-md px-4 py-2 bg-dark-2 border border-gray-600 text-white"
   value={time}
-  min={new Date().toISOString().slice(0, 16)} // disables past dates
-  onChange={(e) => setTime(e.target.value)}
+  min={new Date().toISOString().slice(0, 16)} // disables past dates in picker
+  onChange={(e) => {
+    const selected = new Date(e.target.value);
+    const now = new Date();
+
+    if (selected < now) {
+      toast({
+        title: "Invalid Date",
+        description: "You cannot select a past date/time.",
+      });
+      return; // don’t update state
+    }
+
+    setTime(e.target.value);
+  }}
 />
+
+
 
 
 
