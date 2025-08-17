@@ -95,7 +95,7 @@ app.post("/send-email", async (req, res) => {
     </div>
 
     <div style="margin-top: 20px; text-align: center;">
-      <a href="http://localhost:3000/vote?email=${encodeURIComponent(email)}&title=${encodeURIComponent(title)}" target="_blank"
+      <a href="https://syncmeet-six.vercel.app/vote?email=${encodeURIComponent(email)}&title=${encodeURIComponent(title)}" target="_blank"
         style="background-color: #0f62fe; color: white; padding: 12px 20px; border-radius: 30px; font-weight: bold; text-decoration: none; display: inline-block; animation: pulse 2s infinite;">
         🗳️ Vote Now
       </a>
