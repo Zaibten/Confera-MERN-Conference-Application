@@ -12,10 +12,12 @@ const PersonalRoom = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [time, setTime] = useState("");
+  const [time2, setTime2] = useState(""); // ✅ new date/time
   const [emails, setEmails] = useState("");
 
   const [priorityEmails, setPriorityEmails] = useState<string[]>([]);
   const [savedPoll, setSavedPoll] = useState<any>(null);
+  
 
   useEffect(() => {
     if (user?.publicMetadata?.lastPoll) {
@@ -42,10 +44,10 @@ const sendInvitationsOnly = async () => {
   if (!user) return;
 
   const now = new Date();
-  if (!time || new Date(time) < now) {
+  if (!time || new Date(time) < now || !time2 || new Date(time2) < now) {
     toast({
       title: "Invalid Time",
-      description: "Meeting time cannot be in the past.",
+      description: "Meeting times cannot be in the past.",
     });
     return; // 🚫 stop sending
   }
@@ -61,6 +63,7 @@ const sendInvitationsOnly = async () => {
         title,
         description,
         time,
+        time2, // ✅ send new field
         emails: cleanEmails,
         priorityEmails,
         userId: user.id,
@@ -78,12 +81,14 @@ const sendInvitationsOnly = async () => {
     setTitle("");
     setDescription("");
     setTime("");
+    setTime2("");
     setEmails("");
     setPriorityEmails([]);
     setSavedPoll({
       title,
       description,
       time,
+      time2,
       emails: cleanEmails,
       priorityEmails,
       sentAt: new Date().toISOString(),
@@ -151,9 +156,26 @@ useEffect(() => {
   }}
 />
 
+<input
+  type="datetime-local"
+  className="w-full rounded-md px-4 py-2 bg-dark-2 border border-gray-600 text-white"
+  value={time2}
+  min={new Date().toISOString().slice(0, 16)} // disables past dates in picker
+  onChange={(e) => {
+    const selected = new Date(e.target.value);
+    const now = new Date();
 
+    if (selected < now) {
+      toast({
+        title: "Invalid Date",
+        description: "You cannot select a past date/time.",
+      });
+      return; // don’t update state
+    }
 
-
+    setTime2(e.target.value);
+  }}
+/>
 
           <input
             type="text"
@@ -194,7 +216,8 @@ useEffect(() => {
           <h2 className="text-lg font-bold mb-4">Your Last Created Poll</h2>
           <p><strong>Title:</strong> {savedPoll.title}</p>
           <p><strong>Description:</strong> {savedPoll.description}</p>
-          <p><strong>Time:</strong> {savedPoll.time}</p>
+          <p><strong>Time 1:</strong> {savedPoll.time}</p>
+          <p><strong>Time 2:</strong> {savedPoll.time2}</p>
           <p><strong>Sent At:</strong> {new Date(savedPoll.sentAt).toLocaleString()}</p>
           <p className="mt-2"><strong>All Emails:</strong></p>
           <ul className="list-disc list-inside">

@@ -56,7 +56,27 @@ app.get("/", (req, res) => {
 const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
 
 app.post("/send-email", async (req, res) => {
-  let { title, description, time, emails, priorityEmails, userId } = req.body;
+  let { title, description, time, time2, emails, priorityEmails, userId } = req.body;
+
+function formatDateTime(dateString) {
+  const d = new Date(dateString);
+  if (isNaN(d)) return dateString;
+
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+
+  let hours = d.getHours();
+  let minutes = d.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12 || 12;
+
+  // ✅ If minutes are 0 → hide them
+  const timePart = minutes === 0 ? `${hours}${ampm}` : `${hours}:${String(minutes).padStart(2, "0")} ${ampm}`;
+
+  return `${year}-${month}-${day} ${timePart}`;
+}
+
 
   if (!emails || emails.length === 0) {
     return res.status(400).json({ error: "Email list is empty." });
@@ -71,13 +91,12 @@ app.post("/send-email", async (req, res) => {
       },
     });
 
-    // Send email to each recipient individually with personalized link
     for (const email of emails) {
       const mailOptions = {
         from: `"Sync Meet" <${process.env.SMTP_EMAIL}>`,
         to: email,
         subject: `📊 Schedule Poll: ${title} - Sync Meet`,
- html: `
+html: `
   <div style="max-width: 650px; margin: auto; font-family: 'Segoe UI', sans-serif; background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.07);">
     <div style="text-align: center;">
       <img src="https://res.cloudinary.com/dh7kv5dzy/image/upload/v1755405726/logo_oqjbro.png" alt="Sync Meet Logo" style="width: 85px; height: 85px; border-radius: 50%; border: 3px solid #0f62fe;" />
@@ -89,17 +108,22 @@ app.post("/send-email", async (req, res) => {
     <div style="margin-top: 30px; text-align: center;">
       <p style="font-size: 15px; color: #444; line-height: 1.6;">
         <strong>Description:</strong> ${description}<br/>
-        <strong>Suggested Time:</strong> ${time}<br/>
+        <strong>Suggested Times:</strong><br/>
+        🕒 Time Slot 1: ${time}<br/>
+        🕒 Time Slot 2: ${time2}<br/>
+        <br/>
         Please vote for your preferred meeting time by clicking below.
       </p>
     </div>
 
     <div style="margin-top: 20px; text-align: center;">
-      <a href="https://syncmeet-six.vercel.app/vote?email=${encodeURIComponent(email)}&title=${encodeURIComponent(title)}" target="_blank"
-        style="background-color: #0f62fe; color: white; padding: 12px 20px; border-radius: 30px; font-weight: bold; text-decoration: none; display: inline-block; animation: pulse 2s infinite;">
-        🗳️ Vote Now
-      </a>
-    </div>
+  <a href="https://syncmeet-six.vercel.app/vote?email=${encodeURIComponent(email)}&title=${encodeURIComponent(title)}&time1=${encodeURIComponent(formatDateTime(time))}&time2=${encodeURIComponent(formatDateTime(time2))}" 
+     target="_blank"
+     style="background-color: #0f62fe; color: white; padding: 12px 20px; border-radius: 30px; font-weight: bold; text-decoration: none; display: inline-block; animation: pulse 2s infinite;">
+    🗳️ Vote Now
+  </a>
+</div>
+
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 40px 0;" />
 
@@ -116,21 +140,21 @@ app.post("/send-email", async (req, res) => {
       100% { box-shadow: 0 0 0 0 rgba(15, 98, 254, 0); }
     }
   </style>
-`,
-
+        `,
       };
 
       await transporter.sendMail(mailOptions);
     }
 
-    // Save poll metadata
+    // ✅ Save poll metadata
     if (userId) {
       await clerk.users.updateUserMetadata(userId, {
         publicMetadata: {
           lastPoll: {
             title,
             description,
-            time,
+            time: formatDateTime(time),
+            time2: formatDateTime(time2),
             emails,
             priorityEmails,
             sentAt: new Date().toISOString(),
@@ -145,6 +169,7 @@ app.post("/send-email", async (req, res) => {
     res.status(500).json({ error: "Failed to send email or save data." });
   }
 });
+
 
 app.post("/send-meeting-invite", async (req, res) => {
   let { title, description, time, meetingLink, emails } = req.body;
