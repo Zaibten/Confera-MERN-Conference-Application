@@ -80,7 +80,7 @@ app.post("/send-email", async (req, res) => {
  html: `
   <div style="max-width: 650px; margin: auto; font-family: 'Segoe UI', sans-serif; background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.07);">
     <div style="text-align: center;">
-      <img src="https://img.freepik.com/premium-vector/round-zoom-logo-isolated-white-background_469489-904.jpg?semt=ais_hybrid&w=740" alt="Sync Meet Logo" style="width: 85px; height: 85px; border-radius: 50%; border: 3px solid #0f62fe;" />
+      <img src="https://res.cloudinary.com/dh7kv5dzy/image/upload/v1755405726/logo_oqjbro.png" alt="Sync Meet Logo" style="width: 85px; height: 85px; border-radius: 50%; border: 3px solid #0f62fe;" />
       <h1 style="color: #0f62fe; font-size: 24px; margin: 20px 0 10px;">Sync Meet</h1>
     </div>
 
